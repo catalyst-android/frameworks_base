@@ -4461,6 +4461,13 @@ public final class Settings {
                 "lockscreen_quick_unlock_control";
 
         /**
+         * Sensor block per-package
+         * @hide
+         */
+        @Readable
+        public static final String SENSOR_BLOCK = "sensor_block";
+
+        /**
          * A formatted string of the next alarm that is set, or the empty string
          * if there is no alarm set.
          *
@@ -5882,6 +5889,7 @@ public final class Settings {
             PRIVATE_SETTINGS.add(VOLUME_BUTTON_MUSIC_CONTROL);
             PRIVATE_SETTINGS.add(VOLUME_ROCKER_WAKE);
             PRIVATE_SETTINGS.add(FORCE_FULLSCREEN_CUTOUT_APPS);
+            PRIVATE_SETTINGS.add(SENSOR_BLOCK);
         }
 
         /**
@@ -19023,3 +19031,4 @@ public final class Settings {
         return packages[0];
     }
 }
+
