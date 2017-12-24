@@ -2616,4 +2616,5 @@
     <string name="screenshot_delete_label">Delete</string>
     <!-- Content description indicating that tapping the element will allow deleting the screenshot [CHAR LIMIT=NONE] -->
     <string name="screenshot_delete_description">Delete screenshot</string>
+    <string name="quick_settings_cpuinfo_label">CPU Info</string>
 </resources>
