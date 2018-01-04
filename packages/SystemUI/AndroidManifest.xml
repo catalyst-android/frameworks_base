@@ -417,14 +417,7 @@
                  android:permission="com.android.systemui.permission.SELF"
                  android:exported="false" />
 
-
-        <service android:name=".screenrecord.RecordingService"
-            android:exported="true"
-            android:permission="com.android.systemui.permission.SCREEN_RECORDING">
-            <intent-filter>
-                <action android:name="com.android.systemui.screenrecord.RecordingService" />
-            </intent-filter>
-        </service>
+        <service android:name=".screenrecord.RecordingService" />
 
         <receiver android:name=".SysuiRestartReceiver"
             android:exported="false">
@@ -444,6 +437,15 @@
                 android:exported="true" />
 
         <receiver android:name=".BootReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Smart Pixels -->
+        <service android:name=".smartpixels.SmartPixelsService"
+            android:enabled="true" />
+        <receiver android:name=".smartpixels.SmartPixelsReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
