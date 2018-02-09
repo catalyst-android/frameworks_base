@@ -7443,5 +7443,8 @@ message MetricsEvent {
 
     // Panel for Mobile Data
     PANEL_MOBILE_DATA = 4002;
+
+    //Catalyst Metrics
+    CATALYST_QS_TILES = 2001;
   }
 }
