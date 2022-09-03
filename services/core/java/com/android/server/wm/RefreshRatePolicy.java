@@ -20,14 +20,16 @@ import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
 import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
 
 import android.hardware.display.DisplayManagerInternal.RefreshRateRange;
+import android.content.res.Configuration;
+import android.provider.Settings;
+import android.util.Slog;
 import android.view.Display;
 import android.view.Display.Mode;
 import android.view.DisplayInfo;
-
 import java.util.HashMap;
 
 /**
- * Policy to select a lower refresh rate for the display if applicable.
+ * Policy to select a lower/higher refresh rate for the display if applicable.
  */
 class RefreshRatePolicy {
 
@@ -54,6 +56,7 @@ class RefreshRatePolicy {
     }
 
     private final Mode mLowRefreshRateMode;
+    private final Mode mHighRefreshRateMode;
     private final PackageRefreshRate mNonHighRefreshRatePackages = new PackageRefreshRate();
     private final HighRefreshRateDenylist mHighRefreshRateDenylist;
     private final WindowManagerService mWmService;
@@ -84,6 +87,7 @@ class RefreshRatePolicy {
     RefreshRatePolicy(WindowManagerService wmService, DisplayInfo displayInfo,
             HighRefreshRateDenylist denylist) {
         mLowRefreshRateMode = findLowRefreshRateMode(displayInfo);
+        mHighRefreshRateMode = findHighRefreshRateMode(displayInfo);
         mHighRefreshRateDenylist = denylist;
         mWmService = wmService;
     }
@@ -103,6 +107,22 @@ class RefreshRatePolicy {
             mMaxSupportedRefreshRate = Math.max(mMaxSupportedRefreshRate, refreshRates[i]);
 
             if (refreshRates[i] >= 60f && refreshRates[i] < bestRefreshRate) {
+                bestRefreshRate = refreshRates[i];
+            }
+        }
+        return displayInfo.findDefaultModeByRefreshRate(bestRefreshRate);
+    }
+
+    /**
+     * Finds the mode id with the highest refresh rate which is same resolution as the
+     * default mode.
+     */
+    private Mode findHighRefreshRateMode(DisplayInfo displayInfo) {
+        Mode mode = displayInfo.getDefaultMode();
+        float[] refreshRates = displayInfo.getDefaultRefreshRates();
+        float bestRefreshRate = mode.getRefreshRate();
+        for (int i = refreshRates.length - 1; i >= 0; i--) {
+            if (refreshRates[i] > bestRefreshRate) {
                 bestRefreshRate = refreshRates[i];
             }
         }
@@ -175,6 +195,19 @@ class RefreshRatePolicy {
             }
         }
 
+        if(w.getOwningPackage() != null) {
+            final int refreshRateToForce = Settings.System.getInt(mWmService.mContext.getContentResolver(), w.getOwningPackage() + "_rr", 0);
+            if(refreshRateToForce == 1) {
+                if(w.getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    return mLowRefreshRateMode.getRefreshRate();
+                }
+            } else if(refreshRateToForce == 2) {
+                return mLowRefreshRateMode.getRefreshRate();
+            } else if(refreshRateToForce == 3) {
+                return mHighRefreshRateMode.getRefreshRate();
+            }
+        }
+
         if (w.mAttrs.preferredRefreshRate > 0) {
             return w.mAttrs.preferredRefreshRate;
         }
@@ -208,6 +241,15 @@ class RefreshRatePolicy {
         if (range != null) {
             return range.min;
         }
+            
+        if(packageName != null) {
+            final int refreshRateToForce = Settings.System.getInt(mWmService.mContext.getContentResolver(), w.getOwningPackage() + "_rr", 0);
+            if(refreshRateToForce == 2) {
+                return mLowRefreshRateMode.getRefreshRate();
+            } else if(refreshRateToForce == 3) {
+                return mHighRefreshRateMode.getRefreshRate();
+            }
+        }
 
         return 0;
     }
@@ -228,6 +270,19 @@ class RefreshRatePolicy {
         RefreshRateRange range = mNonHighRefreshRatePackages.get(packageName);
         if (range != null) {
             return range.max;
+        }
+
+        if(packageName != null) {
+            final int refreshRateToForce = Settings.System.getInt(mWmService.mContext.getContentResolver(), w.getOwningPackage() + "_rr", 0);
+            if(refreshRateToForce == 1) {
+                if(w.getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    return mLowRefreshRateMode.getRefreshRate();
+                }
+            } else if(refreshRateToForce == 2) {
+                return mLowRefreshRateMode.getRefreshRate();
+            } else if(refreshRateToForce == 3) {
+                return mHighRefreshRateMode.getRefreshRate();
+            }
         }
 
         return 0;

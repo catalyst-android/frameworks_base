@@ -540,7 +540,7 @@ public class WindowManagerService extends IWindowManager.Stub
      */
     int[] mCurrentProfileIds = new int[] {};
 
-    final Context mContext;
+    public final Context mContext;
 
     final boolean mHasPermanentDpad;
     final long mDrawLockTimeoutMillis;
