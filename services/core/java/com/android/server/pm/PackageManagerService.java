@@ -1953,8 +1953,20 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
 
             final VersionInfo ver = mSettings.getInternalVersion();
-            mIsUpgrade =
-                    !buildFingerprint.equals(ver.fingerprint);
+
+            final String oldBuildDate = SystemProperties.get("persist.catalyst.build.date");
+
+            if (oldBuildDate != null && !oldBuildDate.equals(Long.toString(Build.TIME))) {
+                Slog.i(TAG, "Catalyst Build date changed, clearing package cache");
+                mIsUpgrade=true;
+                SystemProperties.set("persist.catalyst.build.date", Long.toString(Build.TIME));
+            } else {
+                mIsUpgrade = !Build.FINGERPRINT.equals(ver.fingerprint);
+            }
+
+            if (oldBuildDate == null) {
+                SystemProperties.set("persist.catalyst.build.date", Long.toString(Build.TIME));
+            }
             if (mIsUpgrade) {
                 PackageManagerServiceUtils.logCriticalInfo(Log.INFO, "Upgrading from "
                         + ver.fingerprint + " to " + Build.VERSION.INCREMENTAL);
