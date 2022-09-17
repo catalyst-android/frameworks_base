@@ -540,7 +540,7 @@ public class WindowManagerService extends IWindowManager.Stub
      */
     int[] mCurrentProfileIds = new int[] {};
 
-    public final Context mContext;
+    final Context mContext;
 
     final boolean mHasPermanentDpad;
     final long mDrawLockTimeoutMillis;
@@ -1077,6 +1077,10 @@ public class WindowManagerService extends IWindowManager.Stub
 
     static void resetPriorityAfterLockedSection() {
         sThreadPriorityBooster.reset();
+    }
+
+    public int getRefreshRateModeForPkg(String pkgName) {
+        return Settings.System.getInt(mContext.getContentResolver(), pkgName + "_rr", 0);
     }
 
     void openSurfaceTransaction() {

@@ -195,8 +195,8 @@ class RefreshRatePolicy {
             }
         }
 
-        if(w.getOwningPackage() != null) {
-            final int refreshRateToForce = Settings.System.getInt(mWmService.mContext.getContentResolver(), w.getOwningPackage() + "_rr", 0);
+        if(w.getOwningPackage() != null && !w.taskInPipMode()) {
+            final int refreshRateToForce = mWmService.getRefreshRateModeForPkg(w.getOwningPackage());
             if(refreshRateToForce == 1) {
                 if(w.getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     return mLowRefreshRateMode.getRefreshRate();
@@ -242,8 +242,8 @@ class RefreshRatePolicy {
             return range.min;
         }
             
-        if(packageName != null) {
-            final int refreshRateToForce = Settings.System.getInt(mWmService.mContext.getContentResolver(), w.getOwningPackage() + "_rr", 0);
+        if(packageName != null && !w.taskInPipMode()) {
+            final int refreshRateToForce = mWmService.getRefreshRateModeForPkg(packageName);
             if(refreshRateToForce == 2) {
                 return mLowRefreshRateMode.getRefreshRate();
             } else if(refreshRateToForce == 3) {
@@ -272,8 +272,8 @@ class RefreshRatePolicy {
             return range.max;
         }
 
-        if(packageName != null) {
-            final int refreshRateToForce = Settings.System.getInt(mWmService.mContext.getContentResolver(), w.getOwningPackage() + "_rr", 0);
+        if(packageName != null && !w.taskInPipMode()) {
+            final int refreshRateToForce = mWmService.getRefreshRateModeForPkg(packageName);
             if(refreshRateToForce == 1) {
                 if(w.getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     return mLowRefreshRateMode.getRefreshRate();

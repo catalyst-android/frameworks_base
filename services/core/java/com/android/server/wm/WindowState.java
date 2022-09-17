@@ -890,6 +890,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return visible && mFrozenInsetsState == null;
     }
 
+    public boolean taskInPipMode() {
+        final Task task = getTask();
+        if (task != null && task.inPinnedWindowingMode()) {
+            return true;
+        }
+        return false;
+    }
+
     void seamlesslyRotateIfAllowed(Transaction transaction, @Rotation int oldRotation,
             @Rotation int rotation, boolean requested) {
         // Invisible windows and the wallpaper do not participate in the seamless rotation animation
