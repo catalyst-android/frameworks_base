@@ -21,7 +21,6 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
-import android.provider.Settings.Secure;
 import android.service.quicksettings.Tile;
 import android.view.View;
 
@@ -34,8 +33,8 @@ import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.qs.QSTile.BooleanState;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
-import com.android.systemui.qs.SecureSetting;
 import com.android.systemui.qs.QSHost;
+import com.android.systemui.qs.SettingObserver;
 import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.util.settings.SecureSettings;
@@ -48,7 +47,7 @@ import javax.inject.Inject;
 /** Quick settings tile: CPUInfo overlay **/
 public class CPUInfoTile extends QSTileImpl<BooleanState> {
 
-    private final SecureSetting mSetting;
+    private final SettingObserver mSetting;
     private final Icon mIcon = ResourceIcon.get(R.drawable.ic_qs_cpu_info);
 
     @Inject
@@ -64,8 +63,7 @@ public class CPUInfoTile extends QSTileImpl<BooleanState> {
             SecureSettings secureSettings) {
         super(host, backgroundLooper, mainHandler, falsingManager, metricsLogger,
                 statusBarStateController, activityStarter, qsLogger);
-
-        mSetting = new SecureSetting(secureSettings, mHandler, Secure.SHOW_CPU_OVERLAY) {
+        mSetting = new SettingObserver(secureSettings, mHandler, Settings.Secure.SHOW_CPU_OVERLAY) {
             @Override
             protected void handleValueChanged(int value, boolean observedChange) {
                 handleRefreshState(value);
@@ -126,13 +124,8 @@ public class CPUInfoTile extends QSTileImpl<BooleanState> {
     }
 
     @Override
-    protected String composeChangeAnnouncement() {
-        return mContext.getString(R.string.quick_settings_cpuinfo_label);
-    }
-
-    @Override
     public int getMetricsCategory() {
-        return MetricsEvent.CUSTOM_SETTINGS;
+        return MetricsEvent.ARROW;
     }
 
     @Override
