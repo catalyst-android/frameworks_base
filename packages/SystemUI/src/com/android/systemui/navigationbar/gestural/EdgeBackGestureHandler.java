@@ -410,17 +410,17 @@ public class EdgeBackGestureHandler extends CurrentUserTracker
                 Settings.System.BACK_GESTURE_HEIGHT, 0, UserHandle.USER_CURRENT);
         // edgeHeigthSettings cant be range 0 - 3
         // 0 means full height
-        // 1 measns half of the screen
-        // 2 means lower third of the screen
-        // 3 means lower sicth of the screen
+        // 1 means 75% of the screen
+        // 2 means 50% of the screen
+        // 3 means 25% of the screen
         if (edgeHeightSetting == 0) {
             mEdgeHeight = mDisplaySize.y;
         } else if (edgeHeightSetting == 1) {
-            mEdgeHeight = mDisplaySize.y / 2;
+            mEdgeHeight = (int) (mDisplaySize.y * 0.75f);
         } else if (edgeHeightSetting == 2) {
-            mEdgeHeight = mDisplaySize.y / 3;
+            mEdgeHeight = (int) (mDisplaySize.y * 0.50f);
         } else {
-            mEdgeHeight = mDisplaySize.y / 6;
+            mEdgeHeight = (int) (mDisplaySize.y * 0.25f);
         }
     }
 
