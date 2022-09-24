@@ -46,7 +46,7 @@ public class PixelPropsUtils {
     private static final Map<String, ArrayList<String>> propsToKeep;
 
     private static final String[] packagesToChangePixel6 = {
-            "com.google.android.gms"
+            "com.paypal.android.p2pmobile"
     };
 
     private static final String[] packagesToChangePixelXL = {
@@ -84,7 +84,12 @@ public class PixelPropsUtils {
         "com.google.android.youtube",
         "com.google.android.apps.youtube.kids",
         "com.google.android.apps.youtube.music",
-        "com.google.android.apps.recorder"
+        "com.google.android.apps.nbu.paisa.user",
+        "com.google.android.apps.recorder",
+        "com.google.android.ext.services",
+        "com.google.android.apps.walletnfcrel",
+        "com.google.android.gms",
+        "com.google.android.gsf"
     };
 
     private static final String[] packagesToChangeROG1 = {
