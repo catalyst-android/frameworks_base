@@ -57,7 +57,7 @@ class BurnInProtectionController @Inject constructor(
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     private val shiftEnabled = context.resources.getBoolean(R.bool.config_statusBarBurnInProtection) &&
-        Settings.System.getInt(content.getContentResolver(), Settings.System.STATUSBAR_BURN_IN_PROTECTION, 0) == 1
+        Settings.System.getInt(context.getContentResolver(), Settings.System.STATUSBAR_BURN_IN_PROTECTION, 0) == 1
 
     private var navigationMode: Int = navigationModeController.addListener(this)
 
