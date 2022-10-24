@@ -1902,10 +1902,10 @@ public class DisplayModeDirector {
                 refreshRateSwitchingVote = Vote.forDisableRefreshRateSwitching();
             }
 
-            if (mLoggingEnabled) {
-                Slog.d(TAG, "Display brightness " + mBrightness + ", ambient lux " +  mAmbientLux
-                        + ", Vote " + refreshRateVote);
-            }
+            //if (mLoggingEnabled) {
+                //Slog.d(TAG, "Display brightness " + mBrightness + ", ambient lux " +  mAmbientLux
+                //        + ", Vote " + refreshRateVote);
+            //}
             updateVoteLocked(Vote.PRIORITY_FLICKER_REFRESH_RATE, refreshRateVote);
             updateVoteLocked(Vote.PRIORITY_FLICKER_REFRESH_RATE_SWITCH, refreshRateSwitchingVote);
         }
