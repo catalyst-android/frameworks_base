@@ -72,6 +72,9 @@ import com.android.server.sensors.SensorManagerInternal.ProximityActiveListener;
 import com.android.server.statusbar.StatusBarManagerInternal;
 
 import java.io.PrintWriter;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -118,6 +121,7 @@ public class DisplayModeDirector {
     private final SkinThermalStatusObserver mSkinThermalStatusObserver;
     private final DeviceConfigInterface mDeviceConfig;
     private final DeviceConfigDisplaySettings mDeviceConfigDisplaySettings;
+    private int mHbmThreshold = 2000;
 
     // A map from the display ID to the collection of votes and their priority. The latter takes
     // the form of another map from the priority to the vote itself so that each priority is
@@ -1126,6 +1130,8 @@ public class DisplayModeDirector {
                 Settings.Secure.getUriFor(Settings.Secure.MATCH_CONTENT_FRAME_RATE);
         private final Uri mLowPowerRefreshRateSetting =
                 Settings.System.getUriFor(Settings.System.LOW_POWER_REFRESH_RATE);
+        private final Uri mHbmLuxThreshold =
+                Settings.System.getUriFor(Settings.System.HBM_TOGGLE_THRESHOLD);
 
         private final Context mContext;
         private float mDefaultPeakRefreshRate;
@@ -1151,6 +1157,9 @@ public class DisplayModeDirector {
                     this);
             cr.registerContentObserver(mLowPowerRefreshRateSetting, false /*notifyDescendants*/, this,
                     UserHandle.USER_SYSTEM);
+            cr.registerContentObserver(mHbmLuxThreshold, false /*notifyDescendants*/, this,
+                    UserHandle.USER_SYSTEM);
+            mHbmThreshold = Settings.System.getInt(cr, Settings.System.HBM_TOGGLE_THRESHOLD, 2000);
 
             Float deviceConfigDefaultPeakRefresh =
                     mDeviceConfigDisplaySettings.getDefaultPeakRefreshRate();
@@ -1197,6 +1206,9 @@ public class DisplayModeDirector {
                     updateLowPowerModeSettingLocked();
                 } else if (mMatchContentFrameRateSetting.equals(uri)) {
                     updateModeSwitchingTypeSettingLocked();
+                } else if(mHbmLuxThreshold.equals(uri)) {
+                    mHbmThreshold = Settings.System.getInt(mContext.getContentResolver(),
+                        Settings.System.HBM_TOGGLE_THRESHOLD, 2000);
                 }
             }
         }
@@ -1902,12 +1914,28 @@ public class DisplayModeDirector {
                 refreshRateSwitchingVote = Vote.forDisableRefreshRateSwitching();
             }
 
-            //if (mLoggingEnabled) {
-                //Slog.d(TAG, "Display brightness " + mBrightness + ", ambient lux " +  mAmbientLux
-                //        + ", Vote " + refreshRateVote);
-            //}
+            if (mLoggingEnabled) {
+                Slog.d(TAG, "Display brightness " + mBrightness + ", ambient lux " +  mAmbientLux
+                    + ", Vote " + refreshRateVote);
+            }
+            if((mBrightness > 100) && (mAmbientLux > mHbmThreshold)) {
+                Slog.d("HBMAUTO", "Should turn ON HBM because thresold is " + mHbmThreshold + " and ambient lux is " + mAmbientLux);
+                toggleHbmMode(true);
+            } else {
+                Slog.d("HBMAUTO", "Should turn OFF HBM");
+                toggleHbmMode(false);
+            }
             updateVoteLocked(Vote.PRIORITY_FLICKER_REFRESH_RATE, refreshRateVote);
             updateVoteLocked(Vote.PRIORITY_FLICKER_REFRESH_RATE_SWITCH, refreshRateSwitchingVote);
+        }
+        
+        private void toggleHbmMode(boolean enable) {
+            String mode = enable ? "0x10000" : "0xF0000";
+            try {
+                Files.write(Paths.get("/sys/class/drm/card0/card0-DSI-1/disp_param"), mode.getBytes());
+            } catch (Exception e) {
+                Slog.e("HBMAUTO", "ERROR WRITING FILE", e);
+            }
         }
 
         private boolean hasValidLowZone() {

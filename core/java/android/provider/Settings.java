@@ -4582,6 +4582,12 @@ public final class Settings {
         public static final String LOW_POWER_REFRESH_RATE = "low_power_rr_switch";
 
         /**
+         * Threshold to toggle HBM mode.
+         * @hide
+         */
+        public static final String HBM_TOGGLE_THRESHOLD = "hbm_toggle_threshold";
+
+        /**
          * The amount of time in milliseconds before the device goes to sleep or begins
          * to dream after a period of inactivity.  This value is also known as the
          * user activity timeout period since the screen isn't necessarily turned off
