@@ -1523,7 +1523,7 @@ public final class CameraManager {
             implements IBinder.DeathRecipient {
 
         private static final String TAG = "CameraManagerGlobal";
-        private final boolean DEBUG = false;
+        private static final boolean DEBUG = false;
 
         private final int CAMERA_SERVICE_RECONNECT_DELAY_MS = 1000;
 
@@ -1676,7 +1676,7 @@ public final class CameraManager {
 
         private String[] extractCameraIdListLocked() {
             String[] cameraIds = null;
-            boolean exposeAuxCamera = Camera.shouldExposeAuxCamera();
+            boolean exposeAuxCamera = shouldExposeAuxCamera();
             int idCount = 0;
             for (int i = 0; i < mDeviceStatus.size(); i++) {
                 if (!exposeAuxCamera && i == 2) break;
@@ -1754,6 +1754,15 @@ public final class CameraManager {
                         }
                     }});
 
+        }
+
+        private static boolean shouldExposeAuxCamera() {
+            String packageName = ActivityThread.currentOpPackageName();
+            String[] packageList = SystemProperties.get("vendor.camera.aux.packagelist").split(",");
+            if (DEBUG) {
+                Log.d(TAG, "shouldExposeAuxCamera: packageName=" + packageName);
+            }
+            return packageName == null || Arrays.asList(packageList).contains(packageName);
         }
 
         public static boolean cameraStatusesContains(CameraStatus[] cameraStatuses, String id) {
@@ -1951,6 +1960,13 @@ public final class CameraManager {
 
                 if (cameraId == null) {
                     throw new IllegalArgumentException("cameraId was null");
+                }
+
+                /* Force to expose only two cameras
+                 * if the package name does not falls in this bucket
+                 */
+                if (!shouldExposeAuxCamera() && (Integer.parseInt(cameraId) >= 2)) {
+                    throw new IllegalArgumentException("invalid cameraId");
                 }
 
                 ICameraService cameraService = getCameraService();
@@ -2220,9 +2236,14 @@ public final class CameraManager {
         }
 
         private void onStatusChangedLocked(int status, String id) {
-            if (!Camera.shouldExposeAuxCamera() && Integer.parseInt(id) >= 2) {
-                Log.w(TAG, "[soar.cts] ignore the status update of camera: " + id);
-                return;
+            /* Force to ignore the last mono/aux camera status update
+             * if the package name does not falls in this bucket
+             */
+            if (!shouldExposeAuxCamera()) {
+                if (Integer.parseInt(id) >= 2) {
+                    Log.w(TAG, "[soar.cts] ignore the status update of camera: " + id);
+                    return;
+                }
             }
 
             if (DEBUG) {
@@ -2354,6 +2375,16 @@ public final class CameraManager {
             if (DEBUG) {
                 Log.v(TAG,
                         String.format("Camera id %s has torch status changed to 0x%x", id, status));
+            }
+
+            /* Force to ignore the aux or composite camera torch status update
+             * if the package name does not falls in this bucket
+             */
+            if (!shouldExposeAuxCamera()) {
+                if (Integer.parseInt(id) >= 2) {
+                    Log.w(TAG, "ignore the torch status update of camera: " + id);
+                    return;
+                }
             }
 
             if (!validTorchStatus(status)) {
