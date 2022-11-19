@@ -1936,6 +1936,10 @@ public class DisplayModeDirector {
             } catch (Exception e) {
                 Slog.e("HBMAUTO", "ERROR WRITING FILE", e);
             }
+            if(enable) {
+                Settings.System.putInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, 250);
+                Settings.System.putInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, 255);
+            }
         }
 
         private boolean hasValidLowZone() {
