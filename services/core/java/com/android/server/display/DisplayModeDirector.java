@@ -122,6 +122,7 @@ public class DisplayModeDirector {
     private final DeviceConfigInterface mDeviceConfig;
     private final DeviceConfigDisplaySettings mDeviceConfigDisplaySettings;
     private int mHbmThreshold = 2000;
+    private long mHbmLastChecked = SystemClock.uptimeMillis();
 
     // A map from the display ID to the collection of votes and their priority. The latter takes
     // the form of another map from the priority to the vote itself so that each priority is
@@ -1918,12 +1919,15 @@ public class DisplayModeDirector {
                 Slog.d(TAG, "Display brightness " + mBrightness + ", ambient lux " +  mAmbientLux
                     + ", Vote " + refreshRateVote);
             }
-            if((mBrightness > 100) && (mAmbientLux > mHbmThreshold)) {
-                Slog.d("HBMAUTO", "Should turn ON HBM because thresold is " + mHbmThreshold + " and ambient lux is " + mAmbientLux);
-                toggleHbmMode(true);
-            } else {
-                Slog.d("HBMAUTO", "Should turn OFF HBM");
-                toggleHbmMode(false);
+            if((SystemClock.uptimeMillis() - mHbmLastChecked > 2000)) {
+                mHbmLastChecked = SystemClock.uptimeMillis();
+                if((mBrightness > 100) && (mAmbientLux > mHbmThreshold)) {
+                    Slog.d("HBMAUTO", "Should turn ON HBM because thresold is " + mHbmThreshold + " and ambient lux is " + mAmbientLux);
+                    toggleHbmMode(true);
+                } else {
+                    Slog.d("HBMAUTO", "Should turn OFF HBM because thresold is " + mHbmThreshold + " and ambient lux is " + mAmbientLux);
+                    toggleHbmMode(false);
+                }
             }
             updateVoteLocked(Vote.PRIORITY_FLICKER_REFRESH_RATE, refreshRateVote);
             updateVoteLocked(Vote.PRIORITY_FLICKER_REFRESH_RATE_SWITCH, refreshRateSwitchingVote);
