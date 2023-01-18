@@ -157,7 +157,6 @@ public class ScreenshotView extends FrameLayout implements
     private OverlayActionChip mDeleteChip;
     private OverlayActionChip mScrollChip;
     private OverlayActionChip mQuickShareChip;
-    private OverlayActionChip mDeleteChip;
 
     private UiEventLogger mUiEventLogger;
     private ScreenshotViewCallback mCallbacks;
