@@ -28,6 +28,8 @@ import android.hardware.input.InputManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
+import android.os.PowerManager;
+import android.os.SystemClock;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -99,7 +101,15 @@ public class CatalystUtils {
             return false;
         }
     }
-    
+
+    // Method to turn off the screen
+    public static void switchScreenOff(Context ctx) {
+        PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
+        if (pm!= null) {
+            pm.goToSleep(SystemClock.uptimeMillis());
+        }
+    }
+
     // Check if device has a notch
     public static boolean hasNotch(Context context) {
         int result = 0;

@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.Configuration
-import android.os.PowerManager
 import android.os.SystemClock
 import android.util.IndentingPrintWriter
 import android.util.MathUtils
@@ -14,6 +13,7 @@ import android.view.View
 import android.view.ViewConfiguration
 import androidx.annotation.FloatRange
 import androidx.annotation.VisibleForTesting
+import com.android.internal.util.catalyst.CatalystUtils
 import com.android.systemui.Dumpable
 import com.android.systemui.ExpandHelper
 import com.android.systemui.Gefingerpoken
@@ -727,13 +727,8 @@ class DragDownHelper(
     private var dragDownAmountOnStart = 0.0f
     lateinit var expandCallback: ExpandHelper.Callback
     lateinit var host: View
-    lateinit var goToSleep: Runnable
 
     private var minDragDistance = 0
-    private var doubleTapToSleepEnabled = false
-    private var statusBarHeaderHeight: Int = 0
-    private var lastDownEvent: Long = -1
-    private var doubleTapTimeout: Long = 0
     private var initialTouchX = 0f
     private var initialTouchY = 0f
     private var touchSlop = 0f
@@ -742,6 +737,13 @@ class DragDownHelper(
     private var draggedFarEnough = false
     private var startingChild: ExpandableView? = null
     private var lastHeight = 0f
+
+    private var doubleTapToSleepEnabled = false
+    private var statusBarHeaderHeight = 0
+    private var lastDownEvent = -1
+    private var doubleTapTimeout = -1
+    private var goToSleep: Runnable? = null
+
     var isDraggingDown = false
         private set
 
@@ -767,12 +769,11 @@ class DragDownHelper(
         val configuration = ViewConfiguration.get(context)
         touchSlop = configuration.scaledTouchSlop.toFloat()
         slopMultiplier = configuration.scaledAmbiguousGestureMultiplier
-        doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout().toLong()
+        doubleTapTimeout = ViewConfiguration.getDoubleTapTimeout()
         statusBarHeaderHeight = context
-            .resources.getDimensionPixelSize(R.dimen.status_bar_header_height_keyguard)
+                .resources.getDimensionPixelSize(R.dimen.status_bar_header_height_keyguard)
         goToSleep = Runnable {
-            val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-            pm.goToSleep(lastDownEvent)
+            CatalystUtils.switchScreenOff(context)
         }
     }
 
@@ -787,15 +788,16 @@ class DragDownHelper(
                 initialTouchY = y
                 initialTouchX = x
                 if (doubleTapToSleepEnabled && y < statusBarHeaderHeight) {
-                    val eventTime = event.eventTime
-                    lastDownEvent = if (lastDownEvent != -1L) {
+                    val eventTime  = event.getEventTime().toInt()
+                    if (lastDownEvent != -1) {
                         val diff = eventTime - lastDownEvent
+
                         if (diff < doubleTapTimeout) {
-                            goToSleep.run()
+                            goToSleep?.run()
                         }
-                        -1
+                        lastDownEvent = -1
                     } else {
-                        eventTime
+                        lastDownEvent = eventTime
                     }
                 }
             }
